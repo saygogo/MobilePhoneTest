@@ -91,8 +91,10 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         } else if (v == btnSwitchPlayer) {
             // Handle clicks for btnSwitchPlayer
         } else if (v == btnExit) {
+            finish();
             // Handle clicks for btnExit
         } else if (v == btnPre) {
+            setPreVideo();
             // Handle clicks for btnPre
         } else if (v == btnStartPause) {
             if (vv.isPlaying()) {
@@ -104,9 +106,72 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             }
             // Handle clicks for btnStartPause
         } else if (v == btnNext) {
+            setNextVideo();
             // Handle clicks for btnNext
         } else if (v == btnSwitchScreen) {
             // Handle clicks for btnSwitchScreen
+            vv.setVideoURI(uri);
+        }
+        setButtonStatus();
+    }
+
+    private void setButtonStatus() {
+        if (mediaItems != null && mediaItems.size() > 0) {
+            setEnable(true);
+
+            if (position == 0) {
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+
+            if (position == mediaItems.size() - 1) {
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
+            }
+
+        } else if (uri != null) {
+            setEnable(false);
+        }
+    }
+
+    private void setEnable(boolean b) {
+        if (b) {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        } else {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
+    }
+
+    private void setNextVideo() {
+        position++;
+        if (position < mediaItems.size()) {
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+
+            setButtonStatus();
+
+
+        } else {
+            Toast.makeText(this, "退出播放器", Toast.LENGTH_SHORT).show();
+            finish();
+
+
+        }
+    }
+
+    private void setPreVideo() {
+        position--;
+        if (position > 0) {
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+
+            setButtonStatus();
         }
     }
 
@@ -151,13 +216,13 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
     private void setDate() {
 
-        if(mediaItems != null && mediaItems.size() >0){
+        if (mediaItems != null && mediaItems.size() > 0) {
 
             MediaItem mediaItem = mediaItems.get(position);
             tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
 
-        }else if(uri != null){
+        } else if (uri != null) {
             vv.setVideoURI(uri);
         }
 
@@ -166,19 +231,18 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private void getDate() {
         //得到播放地址
         uri = getIntent().getData();
-        mediaItems  = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
-        position = getIntent().getIntExtra("position",0);
+        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        position = getIntent().getIntExtra("position", 0);
 
     }
 
     private void initDate() {
         utils = new Utils();
         receiver = new MyBroadCastReceiver();
-        IntentFilter intentFilter  = new IntentFilter();
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(receiver,intentFilter);
+        registerReceiver(receiver, intentFilter);
     }
-
 
 
     class MyBroadCastReceiver extends BroadcastReceiver {
@@ -186,28 +250,28 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         @Override
         public void onReceive(Context context, Intent intent) {
             int level = intent.getIntExtra("level", 0);//主线程
-            Log.e("TAG","level=="+level);
+            Log.e("TAG", "level==" + level);
             setBatteryView(level);
 
         }
     }
 
     private void setBatteryView(int level) {
-        if(level <=0){
+        if (level <= 0) {
             ivBattery.setImageResource(R.drawable.ic_battery_0);
-        }else if(level <= 10){
+        } else if (level <= 10) {
             ivBattery.setImageResource(R.drawable.ic_battery_10);
-        }else if(level <=20){
+        } else if (level <= 20) {
             ivBattery.setImageResource(R.drawable.ic_battery_20);
-        }else if(level <=40){
+        } else if (level <= 40) {
             ivBattery.setImageResource(R.drawable.ic_battery_40);
-        }else if(level <=60){
+        } else if (level <= 60) {
             ivBattery.setImageResource(R.drawable.ic_battery_60);
-        }else if(level <=80){
+        } else if (level <= 80) {
             ivBattery.setImageResource(R.drawable.ic_battery_80);
-        }else if(level <=100){
+        } else if (level <= 100) {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
-        }else {
+        } else {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
     }
@@ -235,8 +299,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(SystemVideoPlayerActivity.this, "视频播放完成", Toast.LENGTH_SHORT).show();
-                finish();
+                setNextVideo();
             }
         });
 
@@ -260,15 +323,16 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             }
         });
     }
+
     @Override
     protected void onDestroy() {
 
-        if(handler != null){
+        if (handler != null) {
             handler.removeCallbacksAndMessages(null);
             handler = null;
         }
 
-        if(receiver != null){
+        if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
         }
