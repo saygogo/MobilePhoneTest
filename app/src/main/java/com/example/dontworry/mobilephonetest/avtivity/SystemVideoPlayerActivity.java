@@ -52,6 +52,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private ArrayList<MediaItem> videolist;
     private Utils utils;
     private MyBroadCastReceiver receiver;
+    private ArrayList<MediaItem> mediaItems;
+    private int position;
 
     private void findViews() {
         setContentView(R.layout.activity_system_video_player);
@@ -114,15 +116,12 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             super.handleMessage(msg);
             switch (msg.what) {
                 case PROGRESS:
-                    //得到当前进度
                     int currentPosition = vv.getCurrentPosition();
-                    //让SeekBar进度更新
                     seekbarVideo.setProgress(currentPosition);
 
-                    //设置文本当前的播放进度
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
 
-                    //循环发消息
+                    tvSystemTime.setText(getSystemTime());
                     sendEmptyMessageDelayed(PROGRESS, 1000);
 
                     break;
@@ -139,22 +138,43 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         initDate();
 
         findViews();
-        videolist = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
-        int positon = getIntent().getIntExtra("positon", 0);
+        getDate();
         setListener();
-        vv.setVideoPath(videolist.get(positon).getData());
+
+        setDate();
+
+    }
+
+    private void setDate() {
+
+        if(mediaItems != null && mediaItems.size() >0){
+
+            MediaItem mediaItem = mediaItems.get(position);
+            tvName.setText(mediaItem.getName());
+            vv.setVideoPath(mediaItem.getData());
+
+        }else if(uri != null){
+            vv.setVideoURI(uri);
+        }
+
+    }
+
+    private void getDate() {
+        //得到播放地址
+        uri = getIntent().getData();
+        mediaItems  = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        position = getIntent().getIntExtra("position",0);
 
     }
 
     private void initDate() {
         utils = new Utils();
-        //注册监听电量变化广播
         receiver = new MyBroadCastReceiver();
         IntentFilter intentFilter  = new IntentFilter();
-        //监听电量变化
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver,intentFilter);
     }
