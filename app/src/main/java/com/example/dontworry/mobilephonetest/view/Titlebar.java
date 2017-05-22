@@ -5,9 +5,9 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.dontworry.mobilephonetest.R;
 
 /**
@@ -17,7 +17,7 @@ import com.example.dontworry.mobilephonetest.R;
 public class Titlebar extends LinearLayout implements View.OnClickListener {
 
     private TextView tv_sousuo;
-    private TextView tv_game;
+    private RelativeLayout rl_game;
     private ImageView iv_record;
     private Context context;
 
@@ -30,10 +30,10 @@ public class Titlebar extends LinearLayout implements View.OnClickListener {
     protected void onFinishInflate() {
         super.onFinishInflate();
         tv_sousuo = (TextView) getChildAt(1);
-        tv_game = (TextView) getChildAt(2);
+        rl_game = (RelativeLayout) getChildAt(2);
         iv_record = (ImageView) getChildAt(3);
         tv_sousuo.setOnClickListener(this);
-        tv_game.setOnClickListener(this);
+        rl_game.setOnClickListener(this);
         iv_record.setOnClickListener(this);
 
 
@@ -45,7 +45,7 @@ public class Titlebar extends LinearLayout implements View.OnClickListener {
             case R.id.tv_sousuo:
                 Toast.makeText(context, "搜索", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.tv_game:
+            case R.id.rl_game:
                 Toast.makeText(context, "游戏", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.iv_record:
