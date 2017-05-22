@@ -1,18 +1,22 @@
 package com.example.dontworry.mobilephonetest.fragment;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.adapter.LocalVideoAdapter;
+import com.example.dontworry.mobilephonetest.avtivity.SystemVideoPlayerActivity;
 import com.example.dontworry.mobilephonetest.base.BaseFragment;
 import com.example.dontworry.mobilephonetest.bean.MediaItem;
 
@@ -35,6 +39,20 @@ public class LocalVideoFragment extends BaseFragment {
         View view = View.inflate(context, R.layout.fragment_local_video_pager, null);
         lv = (ListView) view.findViewById(R.id.lv);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
+
+                Bundle bunlder = new Bundle();
+                bunlder.putSerializable("videolist", mediaItems);
+                intent.putExtra("position", i);
+                //放入Bundler
+                intent.putExtras(bunlder);
+                startActivity(intent);
+            }
+        });
         return view;
     }
 

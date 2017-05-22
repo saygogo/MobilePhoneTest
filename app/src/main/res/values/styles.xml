@@ -8,7 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="myStyle" >
+    <style name="myStyle">
         <!-- Customize your theme here. -->
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -18,5 +18,12 @@
         <item name="android:drawablePadding">5dp</item>
         <item name="android:gravity">center</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="myScreen" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionBar">false</item>
     </style>
 </resources>
