@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -285,9 +286,33 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
     }
 
+    private float dowY;
+    private int mVol;
+    private float touchRang;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                dowY = event.getY();
+                mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                touchRang = Math.min(screenHeight, screenWidth);//screenHeight
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float endY = event.getY();
+                float distanceY = dowY - endY;
+                float delta = (distanceY / touchRang) * maxVoice;
+                if (delta != 0) {
+                    int mVoice = (int) Math.min(Math.max(mVol + delta, 0), maxVoice);
+                    updateVoiceProgress(mVoice);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -385,7 +410,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
+                if (fromUser) {
                     updateVoiceProgress(progress);
                 }
 
@@ -483,6 +508,24 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             receiver = null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            currentVoice--;
+            updateVoiceProgress(currentVoice);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            currentVoice++;
+            updateVoiceProgress(currentVoice);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
 
