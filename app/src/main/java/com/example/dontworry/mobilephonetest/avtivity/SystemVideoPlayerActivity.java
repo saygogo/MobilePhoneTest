@@ -73,6 +73,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private int maxVoice;
     //是否静音
     private boolean isMute = false;
+    private boolean isNetUri;
 
 
     private void findViews() {
@@ -187,6 +188,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         }
     }
 
+
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -197,6 +199,14 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
                     tvSystemTime.setText(getSystemTime());
+                    if (isNetUri) {
+                        int bufferPercentage = vv.getBufferPercentage();//0~100;
+                        int totalBuffer = bufferPercentage * seekbarVideo.getMax();
+                        int secondaryProgress = totalBuffer / 100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    } else {
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
                     sendEmptyMessageDelayed(PROGRESS, 1000);
                     break;
                 case HIDE_MEDIACONTROLLER:
@@ -228,8 +238,12 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             MediaItem mediaItem = mediaItems.get(position);
             tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
+            isNetUri = utils.isNetUri(mediaItem.getData());
+
         } else if (uri != null) {
             vv.setVideoURI(uri);
+            tvName.setText(uri.toString());
+            isNetUri = utils.isNetUri(uri.toString());
         }
         setButtonStatus();
     }
@@ -445,6 +459,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         position--;
         if (position > 0) {
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri =  utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
@@ -456,6 +471,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         position++;
         if (position < mediaItems.size()) {
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri =  utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
