@@ -11,6 +11,8 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,7 +34,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private VideoView vv;
     private Uri uri;
     private static final int PROGRESS = 0;
-
+    private static final int HIDE_MEDIACONTROLLER = 1;
     private LinearLayout llTop;
     private TextView tvName;
     private ImageView ivBattery;
@@ -54,6 +56,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private MyBroadCastReceiver receiver;
     private ArrayList<MediaItem> mediaItems;
     private int position;
+    private GestureDetector detector;
 
     private void findViews() {
         setContentView(R.layout.activity_system_video_player);
@@ -97,13 +100,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             setPreVideo();
             // Handle clicks for btnPre
         } else if (v == btnStartPause) {
-            if (vv.isPlaying()) {
-                vv.pause();
-                btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
-            } else {
-                vv.start();
-                btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
-            }
+            setStuartOrPause();
             // Handle clicks for btnStartPause
         } else if (v == btnNext) {
             setNextVideo();
@@ -112,7 +109,18 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             // Handle clicks for btnSwitchScreen
             vv.setVideoURI(uri);
         }
-        setButtonStatus();
+        handler.removeMessages(HIDE_MEDIACONTROLLER);
+        handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+    }
+
+    private void setStuartOrPause() {
+        if (vv.isPlaying()) {
+            vv.pause();
+            btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+        } else {
+            vv.start();
+            btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+        }
     }
 
     private void setButtonStatus() {
@@ -190,15 +198,37 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     sendEmptyMessageDelayed(PROGRESS, 1000);
 
                     break;
+                case HIDE_MEDIACONTROLLER:
+                    hideMediaController();
+                    break;
             }
         }
     };
+
+    public void showMediaController() {
+        llBottom.setVisibility(View.VISIBLE);
+        llTop.setVisibility(View.VISIBLE);
+        isShowMediaController = true;
+    }
+
+    private void hideMediaController() {
+        llBottom.setVisibility(View.INVISIBLE);
+        llTop.setVisibility(View.GONE);
+        isShowMediaController = false;
+    }
 
     private String getSystemTime() {
         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         return format.format(new Date());
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        detector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
+    private boolean isShowMediaController = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,6 +272,33 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver, intentFilter);
+
+        detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                setStuartOrPause();
+                super.onLongPress(e);
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Toast.makeText(SystemVideoPlayerActivity.this, "双击了", Toast.LENGTH_SHORT).show();
+
+                return super.onDoubleTap(e);
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                if (isShowMediaController) {
+                    hideMediaController();
+                    handler.removeMessages(HIDE_MEDIACONTROLLER);
+                } else {
+                    showMediaController();
+                    handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+                }
+                return super.onSingleTapConfirmed(e);
+            }
+        });
     }
 
 
@@ -285,6 +342,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 seekbarVideo.setMax(duration);
                 vv.start();
                 handler.sendEmptyMessage(PROGRESS);
+                hideMediaController();
             }
         });
 
@@ -314,12 +372,12 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
             }
         });
     }
