@@ -75,9 +75,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
     private int currentVoice;
     private AudioManager am;
-    //最大音量
     private int maxVoice;
-    //是否静音
     private boolean isMute = false;
     private boolean isNetUri = true;
     private int preCurrentPosition;
@@ -364,7 +362,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             case MotionEvent.ACTION_DOWN:
                 dowY = event.getY();
                 mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                touchRang = Math.min(screenHeight, screenWidth);//screenHeight
+                touchRang = Math.min(screenHeight, screenWidth);
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
                 break;
             case MotionEvent.ACTION_MOVE:
