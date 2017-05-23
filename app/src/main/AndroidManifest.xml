@@ -26,9 +26,16 @@
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".avtivity.SystemVideoPlayerActivity"
+        <activity
+            android:name=".avtivity.SystemVideoPlayerActivity"
             android:screenOrientation="landscape"
-            ></activity>
+            android:theme="@style/noAnimation_Theme"></activity>
+        <activity
+            android:name=".avtivity.VitamioVideoPlayerActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:theme="@style/noAnimation_Theme">
+        </activity>
     </application>
 
 </manifest>

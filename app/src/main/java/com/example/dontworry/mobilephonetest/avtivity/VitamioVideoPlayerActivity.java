@@ -2,15 +2,16 @@ package com.example.dontworry.mobilephonetest.avtivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -28,19 +29,22 @@ import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.bean.MediaItem;
 import com.example.dontworry.mobilephonetest.utils.Utils;
 import com.example.dontworry.mobilephonetest.view.VideoView;
+import com.example.dontworry.mobilephonetest.view.VitamioVideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import io.vov.vitamio.MediaPlayer;
 
-public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class VitamioVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PROGRESS = 0;
     private static final int HIDE_MEDIACONTROLLER = 1;
     private static final int DEFUALT_SCREEN = 0;
     private static final int FULL_SCREEN = 1;
     private static final int SHOW_NET_SPEED = 2;
-    private VideoView vv;
+    private VitamioVideoView vv;
     private Uri uri;
     private ArrayList<MediaItem> mediaItems;
     private LinearLayout llTop;
@@ -84,7 +88,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
 
     private void findViews() {
-        setContentView(R.layout.activity_system_video_player);
+        setContentView(R.layout.activity_vitamio_video_player);
         tv_loading_net_speed = (TextView) findViewById(R.id.tv_loading_net_speed);
         ll_loading = (LinearLayout) findViewById(R.id.ll_loading);
         ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
@@ -105,7 +109,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         btnStartPause = (Button) findViewById(R.id.btn_start_pause);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnSwitchScreen = (Button) findViewById(R.id.btn_switch_screen);
-        vv = (VideoView) findViewById(R.id.vv);
+        vv = (VitamioVideoView) findViewById(R.id.vv);
         btnVoice.setOnClickListener(this);
         btnSwitchPlayer.setOnClickListener(this);
         btnExit.setOnClickListener(this);
@@ -209,7 +213,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
                 case SHOW_NET_SPEED:
                     if (isNetUri) {
-                        String netSpeed = utils.getNetSpeed(SystemVideoPlayerActivity.this);
+                        String netSpeed = utils.getNetSpeed(VitamioVideoPlayerActivity.this);
                         tv_loading_net_speed.setText("正在加载中...." + netSpeed);
                         tv_net_speed.setText("正在缓冲...." + netSpeed);
                         sendEmptyMessageDelayed(SHOW_NET_SPEED, 1000);
@@ -412,7 +416,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             public void onPrepared(MediaPlayer mp) {
                 videoWidth = mp.getVideoWidth();
                 videoHeight = mp.getVideoHeight();
-                int duration = vv.getDuration();
+                int duration = (int) vv.getDuration();
                 seekbarVideo.setMax(duration);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
@@ -425,8 +429,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                startVitamioPlayer();
-
+                showErrorDialog();
                 return true;
             }
         });
@@ -477,21 +480,17 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         });
     }
 
-    private void startVitamioPlayer() {
-        if (vv != null) {
-            vv.stopPlayback();
-        }
-        Intent intent = new Intent(this, VitamioVideoPlayerActivity.class);
-        if (mediaItems != null && mediaItems.size() > 0) {
-            Bundle bunlder = new Bundle();
-            bunlder.putSerializable("videolist", mediaItems);
-            intent.putExtra("position", position);
-            intent.putExtras(bunlder);
-        } else if (uri != null) {
-            intent.setData(uri);
-        }
-        startActivity(intent);
-        finish();
+    private void showErrorDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("当前视频不可播放，请检查网络或者视频文件是否有损坏！")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .show();
     }
 
 
