@@ -313,6 +313,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
 
     }
 
+
     private void initData() {
         utils = new Utils();
         receiver = new MyBroadCastReceiver();
@@ -372,7 +373,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
             case MotionEvent.ACTION_DOWN:
                 dowY = event.getY();
                 mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                touchRang = Math.min(screenHeight, screenWidth);//screenHeight
+                touchRang = Math.min(screenHeight, screenWidth);
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -382,7 +383,6 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
 
                 if (delta != 0) {
                     int mVoice = (int) Math.min(Math.max(mVol + delta, 0), maxVoice);
-                    //0~15
 
                     updateVoiceProgress(mVoice);
                 }
