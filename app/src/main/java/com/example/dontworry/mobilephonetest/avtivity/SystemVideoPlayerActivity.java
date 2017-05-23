@@ -35,7 +35,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PROGRESS = 0;
     private static final int HIDE_MEDIACONTROLLER = 1;
@@ -72,7 +71,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private int videoHeight;
     private LinearLayout ll_loading;
     private TextView tv_loading_net_speed;
-
     private int currentVoice;
     private AudioManager am;
     private int maxVoice;
@@ -81,7 +79,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private int preCurrentPosition;
     private LinearLayout ll_buffering;
     private TextView tv_net_speed;
-
 
     private void findViews() {
         setContentView(R.layout.activity_system_video_player);
@@ -116,6 +113,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
         seekbarVoice.setMax(maxVoice);
         seekbarVoice.setProgress(currentVoice);
+        handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
 
     @Override
@@ -151,24 +149,22 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         }
         handler.removeMessages(HIDE_MEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
-        handler.sendEmptyMessage(SHOW_NET_SPEED);
+
     }
 
-        private void switchPlayer () {
-            new AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("当前使用系统播放器播放，当播放有声音没有画面，请切换到万能播放器播放")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startVitamioPlayer();
-                        }
-                    })
-                    .setNegativeButton("取消", null)
-                    .show();
-        }
-
-
+    private void switchPlayer() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("当前使用系统播放器播放，当播放有声音没有画面，请切换到万能播放器播放")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startVitamioPlayer();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
 
 
     private void updateVoice(boolean isMute) {
@@ -228,8 +224,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 case SHOW_NET_SPEED:
                     if (isNetUri) {
                         String netSpeed = utils.getNetSpeed(SystemVideoPlayerActivity.this);
-                        tv_loading_net_speed.setText("正在加载中...." + netSpeed);
-                        tv_net_speed.setText("正在缓冲...." + netSpeed);
+                        tv_loading_net_speed.setText(netSpeed);
+                        tv_net_speed.setText(netSpeed);
                         sendEmptyMessageDelayed(SHOW_NET_SPEED, 1000);
                     }
                     break;

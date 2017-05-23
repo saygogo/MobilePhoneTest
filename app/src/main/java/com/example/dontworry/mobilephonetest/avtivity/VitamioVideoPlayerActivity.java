@@ -227,8 +227,8 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
                 case SHOW_NET_SPEED:
                     if (isNetUri) {
                         String netSpeed = utils.getNetSpeed(VitamioVideoPlayerActivity.this);
-                        tv_loading_net_speed.setText("正在加载中...." + netSpeed);
-                        tv_net_speed.setText("正在缓冲...." + netSpeed);
+                        tv_loading_net_speed.setText(netSpeed);
+                        tv_net_speed.setText(netSpeed);
                         sendEmptyMessageDelayed(SHOW_NET_SPEED, 1000);
                     }
                     break;
