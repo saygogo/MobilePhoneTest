@@ -239,14 +239,6 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
                     tvSystemTime.setText(getSystemTime());
-                    if (isNetUri) {
-                        int bufferPercentage = vv.getBufferPercentage();//0~100;
-                        int totalBuffer = bufferPercentage * seekbarVideo.getMax();
-                        int secondaryProgress = totalBuffer / 100;
-                        seekbarVideo.setSecondaryProgress(secondaryProgress);
-                    } else {
-                        seekbarVideo.setSecondaryProgress(0);
-                    }
                     sendEmptyMessageDelayed(PROGRESS, 1000);
 
                     break;
@@ -489,7 +481,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
             }
         });
 
-        vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        vv.setOnCompletionListener( new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 setNextVideo();

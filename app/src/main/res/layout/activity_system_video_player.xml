@@ -19,9 +19,9 @@
 
     <LinearLayout
         android:id="@+id/ll_loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_player_loading_background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical">
 
