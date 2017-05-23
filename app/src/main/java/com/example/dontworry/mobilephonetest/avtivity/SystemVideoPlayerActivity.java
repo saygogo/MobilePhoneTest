@@ -2,6 +2,7 @@ package com.example.dontworry.mobilephonetest.avtivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -9,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -128,6 +130,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
         } else if (v == btnSwitchPlayer) {
             // Handle clicks for btnSwitchPlayer
+            switchPlayer();
         } else if (v == btnExit) {
             finish();
             // Handle clicks for btnExit
@@ -152,6 +155,23 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
         handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
+
+        private void switchPlayer () {
+            new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("当前使用系统播放器播放，当播放有声音没有画面，请切换到万能播放器播放")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startVitamioPlayer();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        }
+
+
+
 
     private void updateVoice(boolean isMute) {
         if (isMute) {
