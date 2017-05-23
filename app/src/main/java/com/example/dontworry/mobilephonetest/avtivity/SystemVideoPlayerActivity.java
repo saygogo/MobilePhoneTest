@@ -19,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -351,23 +352,49 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private int mVol;
     private float touchRang;
 
+
+    private float startX1 = 0;//手指按下时的Y坐标
+    private float startY1 = 0;//手指按下时的Y坐标
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                startX1 = event.getX();
+                startY1 = event.getY();
                 dowY = event.getY();
                 mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 touchRang = Math.min(screenHeight, screenWidth);
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
                 break;
             case MotionEvent.ACTION_MOVE:
+
                 float endY = event.getY();
                 float distanceY = dowY - endY;
-                float delta = (distanceY / touchRang) * maxVoice;
-                if (delta != 0) {
-                    int mVoice = (int) Math.min(Math.max(mVol + delta, 0), maxVoice);
-                    updateVoiceProgress(mVoice);
+
+
+                float endY1 = event.getY();
+                float distanceY1 = startY1 - endY1;
+                if (startX1 > screenWidth / 2) {
+                    //右边
+                    //在这里处理音量
+                    float delta = (distanceY / touchRang) * maxVoice;
+
+                    if (delta != 0) {
+                        int mVoice = (int) Math.min(Math.max(mVol + delta, 0), maxVoice);
+
+                        updateVoiceProgress(mVoice);
+                    }
+                } else {
+                    //屏幕左半部分上滑，亮度变大，下滑，亮度变小
+                    final double FLING_MIN_DISTANCE = 0.5;
+                    final double FLING_MIN_VELOCITY = 0.5;
+                    if (distanceY1 > FLING_MIN_DISTANCE && Math.abs(distanceY1) > FLING_MIN_VELOCITY) {
+                        setBrightness(10);
+                    }
+                    if (distanceY1 < FLING_MIN_DISTANCE && Math.abs(distanceY1) > FLING_MIN_VELOCITY) {
+                        setBrightness(-10);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -376,6 +403,18 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         }
         return super.onTouchEvent(event);
     }
+
+    public void setBrightness(float brightness) {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.screenBrightness = lp.screenBrightness + brightness / 255.0f;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.1) {
+            lp.screenBrightness = (float) 0.1;
+        }
+        getWindow().setAttributes(lp);
+    }
+
 
     private boolean isShowMediaController = false;
 

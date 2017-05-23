@@ -11,6 +11,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.cjj.MaterialRefreshLayout;
+import com.cjj.MaterialRefreshListener;
 import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.adapter.NetVideoAdapter;
 import com.example.dontworry.mobilephonetest.avtivity.SystemVideoPlayerActivity;
@@ -35,7 +37,11 @@ public class NetVideoFragment extends BaseFragment {
 
     private ListView lv;
     private TextView tv_nodata;
+    private MaterialRefreshLayout materialRefreshLayout;
     private List<MoveInfo.TrailersBean> datas;
+
+    //是否加载更多(上拉刷新)
+    private boolean isLoadMore = false;
 
     private ArrayList<MediaItem> mediaItem1;
 
@@ -44,6 +50,23 @@ public class NetVideoFragment extends BaseFragment {
         View view = View.inflate(context, R.layout.fragment_net_video_pager, null);
         lv = (ListView) view.findViewById(R.id.lv);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
+        materialRefreshLayout = (MaterialRefreshLayout) view.findViewById(R.id.refresh);
+        materialRefreshLayout.setMaterialRefreshListener(new MaterialRefreshListener() {
+            //下拉刷新
+            @Override
+            public void onRefresh(MaterialRefreshLayout materialRefreshLayout) {
+                isLoadMore = false;
+                getDataFromNet();
+            }
+
+            //上拉加载更多
+            @Override
+            public void onRefreshLoadMore(MaterialRefreshLayout materialRefreshLayout) {
+                super.onRefreshLoadMore(materialRefreshLayout);
+                isLoadMore = true;
+                getMoreDate();
+            }
+        });
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -59,7 +82,6 @@ public class NetVideoFragment extends BaseFragment {
                 Bundle bunlder = new Bundle();
                 bunlder.putSerializable("videolist", mediaItem1);
                 intent.putExtra("position", position);
-                //放入Bundler
                 intent.putExtras(bunlder);
                 startActivity(intent);
 
@@ -68,11 +90,41 @@ public class NetVideoFragment extends BaseFragment {
         return view;
     }
 
+    private void getMoreDate() {
+        //配置联网请求地址
+        final RequestParams request = new RequestParams("http://api.m.mtime.cn/PageSubArea/TrailerList.api");
+        x.http().get(request, new Callback.CommonCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                Log.e("TAG", "加载更多xUtils联网成功==" + result);
+                processData(result);
+                // 结束上拉刷新...
+                materialRefreshLayout.finishRefreshLoadMore();
+
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e("TAG", "加载更xUtils联网失败==" + ex.getMessage());
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+
+    }
+
     @Override
     public void initDate() {
         super.initDate();
         getDataFromNet();
-
 
 
     }
@@ -85,6 +137,7 @@ public class NetVideoFragment extends BaseFragment {
             public void onSuccess(String result) {
 
                 processData(result);
+                materialRefreshLayout.finishRefresh();
             }
 
             @Override
@@ -106,22 +159,32 @@ public class NetVideoFragment extends BaseFragment {
 
     private void processData(String json) {
         MoveInfo moveInfo = new Gson().fromJson(json, MoveInfo.class);
-        datas = moveInfo.getTrailers();
-        if (datas != null && datas.size() > 0) {
-            tv_nodata.setVisibility(View.GONE);
-            adapter = new NetVideoAdapter(context, datas);
-            lv.setAdapter(adapter);
+        if (!isLoadMore) {
+            datas = moveInfo.getTrailers();
+            if (datas != null && datas.size() > 0) {
+                mediaItem1 = new ArrayList<>();
+                for (int i = 0; i < datas.size(); i++) {
+                    String movieName = datas.get(i).getMovieName();
+                    int videoLength = datas.get(i).getVideoLength();
+                    String url = datas.get(i).getUrl();
+                    mediaItem1.add(new MediaItem(movieName, 100, videoLength, url));
+                }
+                tv_nodata.setVisibility(View.GONE);
+                adapter = new NetVideoAdapter(context, datas);
+                lv.setAdapter(adapter);
+            } else {
+                tv_nodata.setVisibility(View.VISIBLE);
+            }
         } else {
-            tv_nodata.setVisibility(View.VISIBLE);
-        }
-
-        mediaItem1 = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            String movieName = datas.get(i).getMovieName();
-            int videoLength = datas.get(i).getVideoLength();
-            String url = datas.get(i).getUrl();
-            mediaItem1.add(new MediaItem(movieName, 100, videoLength, url));
+            List<MoveInfo.TrailersBean> trailersBeanList = moveInfo.getTrailers();
+            for (int i = 0; i < trailersBeanList.size(); i++) {
+                String movieName = trailersBeanList.get(i).getMovieName();
+                int videoLength = trailersBeanList.get(i).getVideoLength();
+                String url = trailersBeanList.get(i).getUrl();
+                mediaItem1.add(new MediaItem(movieName, 100, videoLength, url));
+            }
+            datas.addAll(trailersBeanList);
+            adapter.notifyDataSetChanged();
         }
     }
-
 }
