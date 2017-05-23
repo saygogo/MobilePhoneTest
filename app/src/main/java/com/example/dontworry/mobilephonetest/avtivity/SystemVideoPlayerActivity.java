@@ -74,10 +74,15 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     //是否静音
     private boolean isMute = false;
     private boolean isNetUri;
+    private int preCurrentPosition;
+    private LinearLayout ll_buffering;
+    private TextView tv_net_speed;
 
 
     private void findViews() {
         setContentView(R.layout.activity_system_video_player);
+        ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
+        tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
         llTop = (LinearLayout) findViewById(R.id.ll_top);
         tvName = (TextView) findViewById(R.id.tv_name);
         ivBattery = (ImageView) findViewById(R.id.iv_battery);
@@ -200,12 +205,23 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
                     tvSystemTime.setText(getSystemTime());
                     if (isNetUri) {
-                        int bufferPercentage = vv.getBufferPercentage();//0~100;
+                        int bufferPercentage = vv.getBufferPercentage();
                         int totalBuffer = bufferPercentage * seekbarVideo.getMax();
                         int secondaryProgress = totalBuffer / 100;
                         seekbarVideo.setSecondaryProgress(secondaryProgress);
                     } else {
                         seekbarVideo.setSecondaryProgress(0);
+                    }
+                    if (isNetUri && vv.isPlaying()) {
+
+                        int duration = currentPosition - preCurrentPosition;
+                        if (duration < 500) {
+                            ll_buffering.setVisibility(View.VISIBLE);
+                        } else {
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+
+                        preCurrentPosition = currentPosition;
                     }
                     sendEmptyMessageDelayed(PROGRESS, 1000);
                     break;
@@ -459,7 +475,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         position--;
         if (position > 0) {
             MediaItem mediaItem = mediaItems.get(position);
-            isNetUri =  utils.isNetUri(mediaItem.getData());
+            isNetUri = utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
@@ -471,7 +487,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         position++;
         if (position < mediaItems.size()) {
             MediaItem mediaItem = mediaItems.get(position);
-            isNetUri =  utils.isNetUri(mediaItem.getData());
+            isNetUri = utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
