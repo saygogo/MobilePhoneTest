@@ -113,7 +113,7 @@
                 android:max="100"
                 android:maxHeight="5dp"
                 android:minHeight="5dp"
-                android:progress="20"
+                android:progress="0"
                 android:progressDrawable="@drawable/progress_horizontal"
                 android:thumb="@drawable/progress_thumb" />
 

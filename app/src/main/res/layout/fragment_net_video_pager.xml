@@ -9,7 +9,10 @@
         android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:isLoadMore="true">
+        app:isLoadMore="true"
+        app:overlay="true"
+        app:wave_color="#90ffffff"
+        app:wave_show="true">
 
         <ListView
             android:id="@+id/lv"

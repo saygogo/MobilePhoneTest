@@ -171,7 +171,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
     private void updateVoice(boolean isMute) {
         if (isMute) {
-            am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+            am.setStreamVolume(AudioManager.STREAM_MUSIC, 0,0);
             seekbarVoice.setProgress(0);
         } else {
             am.setStreamVolume(AudioManager.STREAM_MUSIC, currentVoice, 0);
@@ -335,8 +335,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private float touchRang;
 
 
-    private float startX1 = 0;//手指按下时的Y坐标
-    private float startY1 = 0;//手指按下时的Y坐标
+    private float startX1 = 0;
+    private float startY1 = 0;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
