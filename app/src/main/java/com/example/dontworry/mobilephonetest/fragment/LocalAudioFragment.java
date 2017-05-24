@@ -13,11 +13,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.adapter.LocalVideoAdapter;
 import com.example.dontworry.mobilephonetest.avtivity.SystemVideoPlayerActivity;
 import com.example.dontworry.mobilephonetest.base.BaseFragment;
 import com.example.dontworry.mobilephonetest.bean.MediaItem;
+
 import java.util.ArrayList;
 
 /**
@@ -63,7 +65,7 @@ public class LocalAudioFragment extends BaseFragment {
             super.handleMessage(msg);
             if (mediaItems != null && mediaItems.size() > 0) {
                 tv_nodata.setVisibility(View.GONE);
-                adapter = new LocalVideoAdapter(context, mediaItems);
+                adapter = new LocalVideoAdapter(context, mediaItems, false);
                 lv.setAdapter(adapter);
             } else {
                 tv_nodata.setVisibility(View.VISIBLE);

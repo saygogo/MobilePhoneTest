@@ -69,7 +69,7 @@ public class LocalVideoFragment extends BaseFragment {
             super.handleMessage(msg);
             if (mediaItems != null && mediaItems.size() > 0) {
                 tv_nodata.setVisibility(View.GONE);
-                adapter = new LocalVideoAdapter(context, mediaItems);
+                adapter = new LocalVideoAdapter(context, mediaItems, true);
                 lv.setAdapter(adapter);
             } else {
                 tv_nodata.setVisibility(View.VISIBLE);
