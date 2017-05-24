@@ -1,9 +1,12 @@
 package com.example.dontworry.mobilephonetest.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -33,6 +36,9 @@ import java.util.List;
  */
 
 public class NetVideoFragment extends BaseFragment {
+
+    private static final String uri = "http://api.m.mtime.cn/PageSubArea/TrailerList.api";
+    private SharedPreferences sp;
     private NetVideoAdapter adapter;
 
     private ListView lv;
@@ -47,6 +53,7 @@ public class NetVideoFragment extends BaseFragment {
 
     @Override
     public View initView() {
+        sp = context.getSharedPreferences("picasso", Context.MODE_PRIVATE);
         View view = View.inflate(context, R.layout.fragment_net_video_pager, null);
         lv = (ListView) view.findViewById(R.id.lv);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
@@ -124,6 +131,12 @@ public class NetVideoFragment extends BaseFragment {
     @Override
     public void initDate() {
         super.initDate();
+        //在联网之前设置
+
+        String savaJson = sp.getString(uri, "");
+        if (!TextUtils.isEmpty(savaJson)) {
+            processData(savaJson);
+        }
         getDataFromNet();
 
 
@@ -131,11 +144,12 @@ public class NetVideoFragment extends BaseFragment {
 
     private void getDataFromNet() {
 
-        final RequestParams request = new RequestParams("http://api.m.mtime.cn/PageSubArea/TrailerList.api");
+        final RequestParams request = new RequestParams(uri);
         x.http().get(request, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
 
+                sp.edit().putString(uri, result).commit();
                 processData(result);
                 materialRefreshLayout.finishRefresh();
             }
