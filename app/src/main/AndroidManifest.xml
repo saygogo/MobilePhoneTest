@@ -281,7 +281,9 @@
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:theme="@style/noAnimation_Theme" />
-        <activity android:name=".avtivity.AudioPlayerActivity" />
+        <activity android:name=".avtivity.AudioPlayerActivity"
+            android:launchMode="singleTask"
+            />
 
         <service
             android:name=".servier.MySercvier"
