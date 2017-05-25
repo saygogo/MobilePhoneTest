@@ -31,7 +31,6 @@
             android:name=".avtivity.SystemVideoPlayerActivity"
             android:screenOrientation="landscape"
             android:theme="@style/noAnimation_Theme">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -42,6 +41,7 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:mimeType="video/*" />
@@ -60,7 +60,6 @@
                 <data android:mimeType="video/3gpp" />
                 <data android:mimeType="video/3gpp2" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -276,14 +275,24 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
         </activity>
-
         <activity
             android:name=".avtivity.VitamioVideoPlayerActivity"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
-            android:theme="@style/noAnimation_Theme"></activity>
+            android:theme="@style/noAnimation_Theme" />
+        <activity android:name=".avtivity.AudioPlayerActivity" />
+
+        <service
+            android:name=".servier.MySercvier"
+            android:enabled="true"
+            android:exported="true"
+
+            >
+            <intent-filter>
+                <action android:name="com.example.dontworry.mobilephonetest.servier.MYSERVIER" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

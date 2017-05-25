@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.adapter.LocalVideoAdapter;
+import com.example.dontworry.mobilephonetest.avtivity.AudioPlayerActivity;
 import com.example.dontworry.mobilephonetest.avtivity.SystemVideoPlayerActivity;
 import com.example.dontworry.mobilephonetest.base.BaseFragment;
 import com.example.dontworry.mobilephonetest.bean.MediaItem;
@@ -41,7 +42,7 @@ public class LocalAudioFragment extends BaseFragment {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
+                Intent intent = new Intent(context, AudioPlayerActivity.class);
 
                 Bundle bunlder = new Bundle();
                 bunlder.putSerializable("videolist", mediaItems);
