@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,6 +26,7 @@ import com.example.dontworry.mobilephonetest.IMySercvier;
 import com.example.dontworry.mobilephonetest.R;
 import com.example.dontworry.mobilephonetest.servier.MySercvier;
 import com.example.dontworry.mobilephonetest.utils.Utils;
+import com.example.dontworry.mobilephonetest.view.LyricView;
 
 import static com.example.dontworry.mobilephonetest.R.id.iv_icon;
 
@@ -48,7 +50,10 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private MyReceiver receiver;
     private Utils utils;
 
+    private LyricView lyric_show_view;
+
     private final static int PROGRESS = 0;
+    private static final int SHOW_LYRIC = 1;
 
     private boolean notification;
 
@@ -57,6 +62,18 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
+                case SHOW_LYRIC:
+                    try {
+                        int currentPosition = service.getCurrentPosition();
+                        lyric_show_view.setNextShowLyric(currentPosition);
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+                    removeMessages(SHOW_LYRIC);
+                    sendEmptyMessage(SHOW_LYRIC);
+                    break;
                 case PROGRESS:
                     try {
                         int currentPosition = service.getCurrentPosition();
@@ -116,12 +133,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     };
 
 
-    /**
-     * Find the Views in the layout<br />
-     * <br />
-     * Auto-created on 2017-05-24 14:38:15 by Android Layout Finder
-     * (http://www.buzzingandroid.com/tools/android-layout-finder)
-     */
     private void findViews() {
         setContentView(R.layout.activity_audio_player);
         //初始化控件
@@ -141,6 +152,8 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnStartPause = (Button) findViewById(R.id.btn_start_pause);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnLyric = (Button) findViewById(R.id.btn_lyric);
+        lyric_show_view = (LyricView) findViewById(R.id.lyric_show_view);
+
 
         btnPlaymode.setOnClickListener(this);
         btnPre.setOnClickListener(this);
@@ -176,12 +189,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    /**
-     * Handle button click events<br />
-     * <br />
-     * Auto-created on 2017-05-24 14:38:15 by Android Layout Finder
-     * (http://www.buzzingandroid.com/tools/android-layout-finder)
-     */
     @Override
     public void onClick(View v) {
         if (v == btnPlaymode) {
@@ -302,7 +309,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         }
         //发消息更新进度
         handler.sendEmptyMessage(PROGRESS);
-
+        handler.sendEmptyMessage(SHOW_LYRIC);
 
     }
 
@@ -328,6 +335,10 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             receiver = null;
         }
 
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
         super.onDestroy();
     }
 
