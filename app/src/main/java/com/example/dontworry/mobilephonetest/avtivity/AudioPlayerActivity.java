@@ -11,26 +11,38 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.dontworry.mobilephonetest.IMySercvier;
 import com.example.dontworry.mobilephonetest.R;
+import com.example.dontworry.mobilephonetest.bean.Lyric;
+import com.example.dontworry.mobilephonetest.bean.MediaItem;
 import com.example.dontworry.mobilephonetest.servier.MySercvier;
+import com.example.dontworry.mobilephonetest.utils.LyricsUtils;
 import com.example.dontworry.mobilephonetest.utils.Utils;
 import com.example.dontworry.mobilephonetest.view.LyricView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+import java.util.ArrayList;
 
 import static com.example.dontworry.mobilephonetest.R.id.iv_icon;
 
 public class AudioPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+
 
     private RelativeLayout rlTop;
     private ImageView ivIcon;
@@ -44,18 +56,14 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private Button btnStartPause;
     private Button btnNext;
     private Button btnLyric;
-    //这个就是IMusicPlayService.Stub的实例-很多方法-seekTo
     private IMySercvier service;
     private int position;
     private MyReceiver receiver;
     private Utils utils;
-
-    private LyricView lyric_show_view;
-
     private final static int PROGRESS = 0;
     private static final int SHOW_LYRIC = 1;
-
     private boolean notification;
+    private LyricView lyric_show_view;
 
     private Handler handler = new Handler() {
         @Override
@@ -70,7 +78,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
-
                     removeMessages(SHOW_LYRIC);
                     sendEmptyMessage(SHOW_LYRIC);
                     break;
@@ -78,42 +85,32 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                     try {
                         int currentPosition = service.getCurrentPosition();
                         seekbarAudio.setProgress(currentPosition);
-
-                        //设置更新时间
                         tvTime.setText(utils.stringForTime(currentPosition) + "/" + utils.stringForTime(service.getDuration()));
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
-
-
-                    //每秒中更新一次
                     removeMessages(PROGRESS);
                     sendEmptyMessageDelayed(PROGRESS, 1000);
-
                     break;
             }
         }
     };
-    //连接好服务后的回调
     private ServiceConnection conon = new ServiceConnection() {
 
-        /**
-         * 当绑定服务成功后的回调
-         * @param name
-         * @param iBinder 就是IMusicPlayService.Stub的实例
-         */
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
-            //这个就是stub，stub包含很多方法，这些方法调用服务的方法
             service = IMySercvier.Stub.asInterface(iBinder);
             if (service != null) {
                 try {
                     if (notification) {
-                        //从新从Service获取数据
-                        setViewData();
+                        setViewData(null);
                     } else {
-                        service.openAudio(position);//打开播放第0个音频
-                        //service.getDuration();//能直接调用了-不能
+                        service.openAudio(position);
+                        tvArtist.setText(service.getArtistName());
+                        tvAudioname.setText(service.getAudioName());
+
+                        long endTime = SystemClock.uptimeMillis();
+                        long passTime = endTime - MySercvier.startTime;
                     }
 
                 } catch (RemoteException e) {
@@ -121,18 +118,11 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                 }
             }
         }
-
-        /**
-         * 当断开连接的时候回调
-         * @param name
-         */
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
         }
     };
-
-
     private void findViews() {
         setContentView(R.layout.activity_audio_player);
         //初始化控件
@@ -154,13 +144,11 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnLyric = (Button) findViewById(R.id.btn_lyric);
         lyric_show_view = (LyricView) findViewById(R.id.lyric_show_view);
 
-
         btnPlaymode.setOnClickListener(this);
         btnPre.setOnClickListener(this);
         btnStartPause.setOnClickListener(this);
         btnNext.setOnClickListener(this);
         btnLyric.setOnClickListener(this);
-        // 设置监听拖动视频
         seekbarAudio.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
     }
 
@@ -175,20 +163,15 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                     e.printStackTrace();
                 }
             }
-
         }
-
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
 
         }
-
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-
         }
     }
-
     @Override
     public void onClick(View v) {
         if (v == btnPlaymode) {
@@ -241,7 +224,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             } else if (playmode == MySercvier.REPEAT_ALL) {
                 playmode = MySercvier.REPEAT_NORMAL;
             }
-            //保存到服务里面
             service.setPlaymode(playmode);
 
             setButtonImage();
@@ -252,7 +234,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void setButtonImage() {
         try {
-            //从服务得到播放模式
             int playmode = service.getPlaymode();
             if (playmode == MySercvier.REPEAT_NORMAL) {
                 btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
@@ -265,8 +246,6 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             e.printStackTrace();
         }
     }
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -277,39 +256,63 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void initData() {
-        //注册广播
         receiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MySercvier.OPEN_COMPLETE);
         registerReceiver(receiver, intentFilter);
 
         utils = new Utils();
+        EventBus.getDefault().register(this);
     }
 
     class MyReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            //主线程
-            setViewData();
-
+            setViewData(null);
         }
     }
-
-
-    private void setViewData() {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void setViewData(MediaItem mediaItem) {
         try {
-            setButtonImage();
+            long endTime = SystemClock.uptimeMillis();
+            long passTime = endTime - MySercvier.startTime;
+
             tvArtist.setText(service.getArtistName());
             tvAudioname.setText(service.getAudioName());
+
+
+            setButtonImage();
             int duration = service.getDuration();
             seekbarAudio.setMax(duration);
+
+            String audioPath = service.getAudioPath();//mnt/sdcard/audio/beijingbeijing.mp3
+
+            String lyricPath = audioPath.substring(0, audioPath.lastIndexOf("."));//mnt/sdcard/audio/beijingbeijing
+            File file = new File(lyricPath + ".lrc");
+            if (!file.exists()) {
+                file = new File(lyricPath + ".txt");
+            }
+            LyricsUtils lyricsUtils = new LyricsUtils();
+            lyricsUtils.readFile(file);
+
+            //2.传入解析歌词的工具类
+            ArrayList<Lyric> lyrics = lyricsUtils.getLyrics();
+            lyric_show_view.setLyrics(lyrics);
+
+            //3.如果有歌词，就歌词同步
+
+            if (lyricsUtils.isLyric()) {
+                handler.sendEmptyMessage(SHOW_LYRIC);
+            }
+
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }
         //发消息更新进度
         handler.sendEmptyMessage(PROGRESS);
-        handler.sendEmptyMessage(SHOW_LYRIC);
+
 
     }
 
@@ -328,29 +331,21 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             unbindService(conon);
             conon = null;
         }
-
-        //广播取消注册
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
         }
+        EventBus.getDefault().unregister(this);
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
-            handler = null;
         }
         super.onDestroy();
     }
 
-    /**
-     * 启动服务
-     */
     private void startAndBindService() {
         Intent intent = new Intent(this, MySercvier.class);
-//        intent.setAction("com.atguigu.mobileplayer0224.service.MUSICPLAYSERVICE");
-        //绑定-得到服务的操作对象-IMusicPlayService service
         bindService(intent, conon, Context.BIND_AUTO_CREATE);
-        //防止多次实例化Service
         startService(intent);
     }
 }
