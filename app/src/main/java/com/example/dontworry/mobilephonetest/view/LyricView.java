@@ -24,6 +24,8 @@ public class LyricView extends TextView {
     private int index = 0;
     private float textHeight = 20;
     private int currentPosition;
+    private long timePoint;
+    private long sleepTime;
 
     public LyricView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,6 +67,17 @@ public class LyricView extends TextView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (lyrics != null && lyrics.size() > 0) {
+
+            if (index != lyrics.size() - 1) {
+                float push = 0;
+                if (sleepTime == 0) {
+                    push = 0;
+                } else {
+                    push = ((currentPosition - timePoint) / sleepTime) * textHeight;
+                }
+                canvas.translate(0, -push);
+            }
+
             String currentContent = lyrics.get(index).getContent();
             canvas.drawText(currentContent, width / 2, height / 2, paintGreen);
 
@@ -110,7 +123,12 @@ public class LyricView extends TextView {
                 int tempIndex = i - 1;
                 if (currentPosition >= lyrics.get(tempIndex).getTimePoint()) {
                     index = tempIndex;
+                    timePoint = lyrics.get(index).getTimePoint();
+
+                    sleepTime = lyrics.get(index).getSleepTime();
                 }
+            } else {
+                index = i;
             }
 
         }
